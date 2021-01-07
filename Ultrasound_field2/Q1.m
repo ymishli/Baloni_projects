@@ -3,6 +3,7 @@ clc; close all;
 % Initialize Field
 %addpath('C:\Users\Rony\Desktop\Ultrasound\Field2\Field_II_ver_3_22_windows');
 field_init(0)
+%djdjjd
 
 % Generate the transducer aperture for send and receive
 f0          = 2.5e6;            %  Transducer center frequency [Hz]
