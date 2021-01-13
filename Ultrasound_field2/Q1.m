@@ -3,7 +3,6 @@ clc; close all;
 % Initialize Field
 %addpath('C:\Users\Rony\Desktop\Ultrasound\Field2\Field_II_ver_3_22_windows');
 field_init(0)
-%djdjjd
 
 % Generate the transducer aperture for send and receive
 f0          = 2.5e6;            %  Transducer center frequency [Hz]
@@ -28,3 +27,26 @@ set_field('c',c);               % Sets the speed of sound
 % Generate aperture for transmission
 tx = xdc_linear_array (N_elements, width, height, kerf, N_sub_x, N_sub_y, focus);
 
+% Set the excitation of the transmit aperture
+t = (0:1/fs:1.5/f0);
+excitaion = sin(2*pi*f0*t);
+xdc_excitation(tx,excitaion);
+
+%1.a
+show_xdc_geir(tx,1);
+axis equal;
+view(3);
+figure;
+plot(t,excitaion);
+title('excitation');
+xlabel('t [sec]');
+ylabel('V');
+
+%1.b
+t_h = (-2/f0:1/fs:2/f0);
+Bw = 0.6;
+impulse_response = gauspuls(t_h,f0,Bw);
+figure;
+plot(t_h,impulse_response);
+figure;
+freqz(impulse_response);
