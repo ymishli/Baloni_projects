@@ -43,10 +43,25 @@ xlabel('t [sec]');
 ylabel('V');
 
 %1.b
+% Set the impulse response of the transmit aperture
 t_h = (-2/f0:1/fs:2/f0);
 Bw = 0.6;
 impulse_response = gauspuls(t_h,f0,Bw);
+impulse_response = impulse_response.*sin(2*pi*f0*t_h);
+xdc_impulse(tx,impulse_response);
 figure;
 plot(t_h,impulse_response);
 figure;
 freqz(impulse_response);
+
+%1.c
+% calculte the spatial impulse respponse of the transmit aperture
+% [h_tx,start_time_h_tx] = calc_h(tx,[0,0,40]/1000);
+
+%1.d
+x = linspace(-10,10,100);
+z = linspace(10,80,100);
+y = zeros(1,100);
+points = [x(:), y(:), z(:)];
+
+
