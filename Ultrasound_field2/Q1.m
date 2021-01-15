@@ -1,4 +1,4 @@
-clc; close all;
+clc; close all;clear all;
 
 % Initialize Field
 %addpath('C:\Users\Rony\Desktop\Ultrasound\Field2\Field_II_ver_3_22_windows');
@@ -60,9 +60,33 @@ figure;
 plot(h);
 
 %1.d
-x = linspace(-10,10,100)/1000;
-z = linspace(10,80,100)/1000;
-y = zeros(1,100);
-points = [x(:) y(:) z(:)];
+[x,y,z]=meshgrid(linspace(-10,10,100)/1000,0,linspace(10,80,100)/1000);
+points=[x(:) y(:) z(:)];
+Im_size=[length(x),1,length(z)];
+[hp,start_t]=calc_hp(tx,points);
+[m,n]=size(hp);
 
+% With 'Norm' on each impulse response
+for i=1:n
+  P1(i) = norm(hp(:,i));
+end
+P1=reshape(P1,[Im_size(1),Im_size(3)]);
+P1=rot90(P1,1);
+Result=flipud(P1);
+Result_norm=Result-min(min(Result));
+Result_norm=Result_norm/max(max(Result_norm));
+figure;
+subplot(1,2,1);
+imagesc(1000*x(:),1000*z(:),Result_norm);
+colormap(hot)
+title('Transmit Field Example');
+xlabel('X[mm]');ylabel('Z[mm]');
 
+% Convert Intensity results to dB
+%  Result_dB=Convert2dB(Result);
+%  subplot(1,2,2);
+%  imagesc(1000*x(:),1000*z(:),Result_dB);
+%  colormap(hot);
+%  title('Transmit Field Example dB');
+%  xlabel('X[mm]');ylabel('Z[mm]');
+%  colorbar
