@@ -5,10 +5,11 @@ clc; close all;clear all;
 field_init(0)
 
 % Control the plots plot_on = [sec_a sec_b sec_c sec_d sec_e]
-plot_on = [0 0 1 0 0];
+plot_on = [0 0 0 1 0];
 
 % Generate the transducer aperture for send and receive
-f0          = 2.5e6;            %  Transducer center frequency [Hz]
+% f0          = 2.5e6;            %  Transducer center frequency [Hz]
+f0          = 5e6;            %  Transducer center frequency [Hz]
 fs          = 100e6;            %  Sampling frequency [Hz]
 c           = 1490;             %  Speed of sound [m/s]
 lambda      = c/f0;             %  Wavelength [m]
@@ -25,7 +26,7 @@ set_sampling(fs);               % Sets sampling frequency
 set_field('use_triangles',0);   % Tells whether to use triangles (1) or not (0)
 set_field('use_rectangles',1);  % Tells whether to use rectangles (1) or not (0)
 set_field('use_att',0);         % Tells whether to use attenuation (1) or not (0)
-set_field('c',c);               % Sets the speed of sound
+% set_field('c',c);               % Sets the speed of sound
 
 % Generate aperture for transmission
 tx = xdc_linear_array (N_elements, width, height, kerf, N_sub_x, N_sub_y, focus);
@@ -67,11 +68,26 @@ end
 
 %1.c
 if plot_on(3) == 1
-    [h, start_time] = calc_hp (tx,[0,0,40/1000]);
-    figure;
-    plot(h);
+    [h, start_time] = calc_hp(tx,[0,0,40/1000]);
+    N = length(h);
+    t_h_ext = 1/fs*(0:1:N-1)- t_h(1);
+    figure('Name','Q1 - Section 3 - Field Reaction on point [0,0,40mm]');
+    subplot(2,1,1);
+    plot(t_h_ext,h, 'Color', 'g');
+    title('Q1 - Section 3 - Field Reaction on point [0,0,40mm]');
+    xlabel('t [sec]');
+    ylabel('V');
+    h_norm = h/max(h);
+    impulse_response_norm = impulse_response/max(impulse_response);    
+    subplot(2,1,2);
+    p = plot(t_h,impulse_response_norm, t_h_ext+start_time,h_norm);
+    p(1).Color = 'b';
+    p(2).Color = 'g';    
+    title('Q1 - Section 3 - Normalized Field Reaction on point [0,0,40mm] - relative to Excitation');
+    annotation('textbox', [0.3, 0.2, 0.5, 0.1], 'String', "the time diffrence between excitation and his response = 40mm/c");
+    xlabel('t [sec]');
+    ylabel('V');
 end
-
 
 %1.d
 if plot_on(4) == 1
@@ -90,18 +106,30 @@ if plot_on(4) == 1
     Result=flipud(P1);
     Result_norm=Result-min(min(Result));
     Result_norm=Result_norm/max(max(Result_norm));
-    figure;
+    figure('Name','Q1 - Section 4 - Transmit field picture at [-10,10]mm*[10,80]mm');
     subplot(1,2,1);
     imagesc(1000*x(:),1000*z(:),Result_norm);
     colormap(hot)
-    title('Transmit Field Example');
+    title('Q1 - Section 4 - Transmit field picture');
     xlabel('X[mm]');ylabel('Z[mm]');
+    
     % Convert Intensity results to dB
-    %  Result_dB=Convert2dB(Result);
-    %  subplot(1,2,2);
-    %  imagesc(1000*x(:),1000*z(:),Result_dB);
-    %  colormap(hot);
-    %  title('Transmit Field Example dB');
-    %  xlabel('X[mm]');ylabel('Z[mm]');
-    %  colorbar
+    a = (1-1e-4)/(max(Result(:))- min(Result(:)));
+    b = 1 - a*max(Result(:));
+    Result = a*Result + b;
+    Result_dB=10*log10(Result);    
+    subplot(1,2,2);
+    imagesc(1000*x(:),1000*z(:),Result_dB);
+    colormap(hot);
+    title('Q1 - Section 4 - Transmit field picture dB');
+    xlabel('X[mm]');ylabel('Z[mm]');
+    colorbar;
+    z_30mm = round(find(abs(z(:) - 0.03) == min(abs(z(:) - 0.03)),1)/100);
+    z_60mm = round(find(abs(z(:) - 0.06) == min(abs(z(:) - 0.06)),1)/100);
+    x = linspace(-10,10,100);
+    figure('Name','Q1 - Section 4 - Literal intersects at z=30mm,60mm');
+    plot(x, Result_dB(z_30mm,:), x,  Result_dB(z_60mm,:));
+    xlabel('X[mm]')
+    title('Q1 - Section 4 - Literal intersects at z=30mm,60mm');
+    legend('z=30[mm]','z=60[mm]');
 end
