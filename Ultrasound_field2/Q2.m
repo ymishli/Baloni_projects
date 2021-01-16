@@ -54,14 +54,16 @@ xdc_impulse(tx,impulse_response);
 for field_num=1:3 % I run it three times for all the cases in section 2 and 3
     if field_num == 1
         xdc_focus(tx, 0, [0 0 40]/1000);
+        original_focus_data = xdc_get(tx,'focus');        
+        time_taps_generated_by_xdc_focus = original_focus_data(2:end);
     else
         pitch = width + kerf;
         plot_for_debug = 1;
         if field_num == 2
-            N_elements_delay = Delay(N_elements,1540,pitch,[0 0 40]/1000, plot_for_debug);
+            N_elements_delay = Delay(N_elements,1540,pitch,[0 0 40]/1000, plot_for_debug, time_taps_generated_by_xdc_focus);
         end
         if field_num == 3
-            N_elements_delay = Delay(N_elements,1540,pitch,[5 0 40]/1000, plot_for_debug);
+            N_elements_delay = Delay(N_elements,1540,pitch,[5 0 40]/1000, plot_for_debug, time_taps_generated_by_xdc_focus);
         end
         N_elements_delay_matrix = repmat(N_elements_delay,N_elements,1);
         xdc_focus_times(tx,zeros(length(N_elements_delay),1),N_elements_delay_matrix);
@@ -123,7 +125,6 @@ for field_num=1:3 % I run it three times for all the cases in section 2 and 3
         end        
     end
 end
-
 
 %1.c
 
