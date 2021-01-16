@@ -26,7 +26,7 @@ set_sampling(fs);               % Sets sampling frequency
 set_field('use_triangles',0);   % Tells whether to use triangles (1) or not (0)
 set_field('use_rectangles',1);  % Tells whether to use rectangles (1) or not (0)
 set_field('use_att',0);         % Tells whether to use attenuation (1) or not (0)
-% set_field('c',c);               % Sets the speed of sound
+set_field('c',c);               % Sets the speed of sound
 
 % Generate aperture for transmission
 tx = xdc_linear_array (N_elements, width, height, kerf, N_sub_x, N_sub_y, focus);
@@ -43,7 +43,7 @@ if plot_on(1) == 1
     axis equal;
     view(3);
     zlim([-5 5]);
-    title('Q2 - Section 1 - Transducer Geometry');    
+    title('Q2 - Section 1 - Transducer Geometry');
 end
 
 %1.b + 1.c
@@ -60,10 +60,10 @@ for field_num=1:3 % I run it three times for all the cases in section 2 and 3
         pitch = width + kerf;
         plot_for_debug = 1;
         if field_num == 2
-            N_elements_delay = Delay(N_elements,1540,pitch,[0 0 40]/1000, plot_for_debug, time_taps_generated_by_xdc_focus);
+            N_elements_delay = Delay(N_elements,c,pitch,[0 0 40]/1000, plot_for_debug, time_taps_generated_by_xdc_focus);
         end
         if field_num == 3
-            N_elements_delay = Delay(N_elements,1540,pitch,[5 0 40]/1000, plot_for_debug, time_taps_generated_by_xdc_focus);
+            N_elements_delay = Delay(N_elements,c,pitch,[5 0 40]/1000, plot_for_debug, time_taps_generated_by_xdc_focus);
         end
         N_elements_delay_matrix = repmat(N_elements_delay,N_elements,1);
         xdc_focus_times(tx,zeros(length(N_elements_delay),1),N_elements_delay_matrix);
@@ -179,6 +179,15 @@ end
 xdc_apodization(tx,zeros(N_elements,1),ones(N_elements,N_elements));
 % Generate aperture for receive
 rx = xdc_linear_array (N_elements, width, height, kerf, N_sub_x, N_sub_y, focus);
+% Set excitation
+t = (0:1/fs:1.5/f0);
+excitaion = sin(2*pi*f0*t);
+xdc_excitation(rx,excitaion());
+% Set impulse response
+Bw = 0.6;
+t_h = (-2/f0:1/fs:2/f0);
+impulse_response = gauspuls(t_h,f0,Bw);    
+xdc_impulse(rx,impulse_response);    
 % Define points to calc the received signal from
 [x,y,z]=meshgrid(linspace(-10,10,100)/1000,0,linspace(10,80,100)/1000);
 points=[x(:) y(:) z(:)];

@@ -27,7 +27,7 @@ if plot_for_debug
     hold on;
     stem(elements_locations,time_taps_generated_by_xdc_focus','filled', 'LineStyle','none');
     hold off;
-    legend('Created by Delay function','Created by xdc\_focus'); 
-    title('Q2 - Section 3 - Eelements delay from geometrical calculation');    
+    legend('Created by Delay function','Created by xdc\_focus');
+    title('Q2 - Section 3 - Elements delay from geometrical calculation');    
     xlabel('Elements Locations [mm]');ylabel('Elements Delay [sec]');
 end
