@@ -5,7 +5,7 @@ clc; close all;clear all;
 field_init(0)
 
 % Control the plots plot_on = [sec_a sec_b sec_c sec_d sec_e]
-plot_on = [1 1 1 0 0];
+plot_on = [0 0 0 1 0];
 
 % Generate the transducer aperture for send and receive
 f0          = 2.5e6;            %  Transducer center frequency [Hz]
@@ -126,40 +126,54 @@ for field_num=1:3 % I run it three times for all the cases in section 2 and 3
     end
 end
 
-%1.c
-
-    % if plot_on(2) == 1    
-%     figure('Name','Q1 - Section 2 - Impulse Response in Time');
-%     plot(t_h,impulse_response);    
-%     title('Q1 - Section 2 - Impulse Response in Time');
-%     xlabel('t [sec]');
-%     ylabel('V');
-%     figure('Name','Q1 - Section 2 - Impulse Response in Frequncy domain');    
-%     freqz(impulse_response);
-%     title('Q1 - Section 2 - Impulse Response in Frequncy domain');
-% end
-% 
-% %1.c
-% if plot_on(3) == 1
-%     [h, start_time] = calc_hp(tx,[0,0,40/1000]);
-%     N = length(h);
-%     t_h_ext = 1/fs*(0:1:N-1)- t_h(1);
-%     figure('Name','Q1 - Section 3 - Field Reaction on point [0,0,40mm]');
-%     subplot(2,1,1);
-%     plot(t_h_ext,h, 'Color', 'g');
-%     title('Q1 - Section 3 - Field Reaction on point [0,0,40mm]');
-%     xlabel('t [sec]');
-%     ylabel('V');
-%     h_norm = h/max(h);
-%     impulse_response_norm = impulse_response/max(impulse_response);    
-%     subplot(2,1,2);
-%     p = plot(t_h,impulse_response_norm, t_h_ext+start_time,h_norm);
-%     p(1).Color = 'b';
-%     p(2).Color = 'g';    
-%     title('Q1 - Section 3 - Normalized Field Reaction on point [0,0,40mm] - relative to Excitation');
-%     annotation('textbox', [0.3, 0.2, 0.5, 0.1], 'String', "the time diffrence between excitation and his response = 40mm/c");
-%     xlabel('t [sec]');
-%     ylabel('V');
+%1.d
+xdc_focus(tx, 0, [0 0 40]/1000);
+[x,y,z]=meshgrid(linspace(-10,10,100)/1000,0,linspace(10,80,100)/1000);
+points=[x(:) y(:) z(:)];
+for type_of_window = 1:3 % 1 - rect , 2 - guasian , 3 - cosian :-)
+    if type_of_window == 1 % rect
+        xdc_apodization(tx,zeros(N_elements,1),ones(N_elements,N_elements));
+    elseif type_of_window == 2 % guasian
+        guasian_apo = hamming(N_elements);
+        guasian_apo_matrix = repmat(guasian_apo' ,N_elements,1);
+        xdc_apodization(tx,zeros(N_elements,1),guasian_apo_matrix);
+    else % cosian
+        cos_apo = tukeywin(N_elements,1);
+        cos_apo_matrix = repmat(cos_apo' ,N_elements,1);
+        xdc_apodization(tx,zeros(N_elements,1),cos_apo_matrix);
+    end
+    
+    [hp,start_t]=calc_hp(tx,points);
+    [m,n]=size(hp);
+    % With 'Norm' on each impulse response
+    for i=1:n
+      P1(i) = norm(hp(:,i));
+    end
+    P1=reshape(P1,[Im_size(1),Im_size(3)]);
+    P1=rot90(P1,1);
+    Result=flipud(P1);
+    Result_norm=Result-min(min(Result));
+    Result_norm=Result_norm/max(max(Result_norm));
+    a = (1-1e-4)/(max(Result(:))- min(Result(:)));
+    b = 1 - a*max(Result(:));
+    Result = a*Result + b;
+    Result_dB=10*log10(Result);
+    z_40mm = round(find(abs(z(:) - 0.04) == min(abs(z(:) - 0.04)),1)/100);    
+    if plot_on(4) == 1
+        if type_of_window == 1 % open figure in first itertion only
+            figure('Name','Q2 - Section 4 - Apodization effect on z=40[mm] cross section');            
+        end    
+        plot(linspace(-10,10,100),  Result_dB(z_40mm,:));
+        hold on;
+        if type_of_window == 3 % do cosmetic stuff on graph for last iteration
+            xlabel('X[mm]');ylabel('Pressure');
+            title('Q2 - Section 4 - Apodization effect on z=40[mm] cross section');
+            legend('rect','guasian','cos');
+            hold off;
+        end    
+    end    
+end
+   
 % end
 % 
 % %1.d

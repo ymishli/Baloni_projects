@@ -20,9 +20,7 @@ end
 focus_point_norm = norm(focus_point);
 element_focus_point_distance = sqrt((elements_locations - focus_point(1)).^2 + focus_point(3)^2);
 N_elements_delay_offset = (focus_point_norm - element_focus_point_distance)/c;
-% shift results to be relative to zero to get positive delays
-% N_elements_delay = N_elements_delay_offset - min(N_elements_delay_offset);
-N_elements_delay = N_elements_delay_offset
+N_elements_delay = N_elements_delay_offset;
 if plot_for_debug
     figure('Name','Q2 - Section 3 - Eelements delay from geometrical calculation');
     stem(elements_locations,N_elements_delay,'filled', 'LineStyle','none');
