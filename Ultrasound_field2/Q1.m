@@ -8,8 +8,8 @@ field_init(0)
 plot_on = [1 1 1 1 1];
 
 % Generate the transducer aperture for send and receive
-% f0          = 2.5e6;            %  Transducer center frequency [Hz]
-f0          = 5e6;            %  Transducer center frequency [Hz]
+f0          = 2.5e6;            %  Transducer center frequency [Hz]
+% f0          = 5e6;            %  Transducer center frequency [Hz]
 fs          = 100e6;            %  Sampling frequency [Hz]
 c           = 1490;             %  Speed of sound [m/s]
 lambda      = c/f0;             %  Wavelength [m]
