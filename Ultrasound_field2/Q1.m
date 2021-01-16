@@ -5,7 +5,7 @@ clc; close all;clear all;
 field_init(0)
 
 % Control the plots plot_on = [sec_a sec_b sec_c sec_d sec_e]
-plot_on = [0 0 0 1 0];
+plot_on = [1 1 1 1 1];
 
 % Generate the transducer aperture for send and receive
 % f0          = 2.5e6;            %  Transducer center frequency [Hz]
