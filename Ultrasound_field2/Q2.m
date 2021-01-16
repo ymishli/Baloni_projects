@@ -202,7 +202,53 @@ z_40mm = round(find(abs(z(:) - 0.04) == min(abs(z(:) - 0.04)),1)/100);
 if plot_on(5) == 1
     figure('Name','Q2 - Section 5 - Received vs Transmit z=40[mm] cross section');
     plot(linspace(-10,10,100), Result_dB(z_40mm,:), linspace(-10,10,100), z_40_cross_section);
-    xlabel('X[mm]');ylabel('Pressure');
+    xlabel('X[mm]'); ylabel('Pressure');
     title('Q2 - Section 5 - Received vs Transmit z=40[mm] cross section');
     legend('Received','Transmitted');
+end
+
+%1.f
+grating_lobes_45_deg = sqrt(2)*N_elements*c/f0 - width;
+% kerf_vec        = (0.010:0.010:0.090)/1000;                % Kerf [m]
+% kerf_vec        = linspace(kerf,grating_lobes_45_deg, 6);
+kerf_vec        = linspace(kerf,80*kerf, 6);
+[x,y,z]=meshgrid(linspace(-20,20,100)/1000,0,linspace(10,80,100)/1000);
+points=[x(:) y(:) z(:)];
+Im_size=[length(x),1,length(z)];
+% Generate aperture for transmission
+figure('Name','Q2 - Section 6 - Detecing Grating Lobes with kerf increase');
+for kerf_index = 1:length(kerf_vec)
+    tx = xdc_linear_array (N_elements, width, height, kerf_vec(kerf_index), N_sub_x, N_sub_y, focus);
+
+    % Set the excitation of the transmit aperture
+    t = (0:1/fs:1.5/f0);
+    excitaion = sin(2*pi*f0*t);
+    xdc_excitation(tx,excitaion());
+    %1.b + 1.c
+    Bw = 0.6;
+    t_h = (-2/f0:1/fs:2/f0);
+    impulse_response = gauspuls(t_h,f0,Bw);    
+    xdc_impulse(tx,impulse_response);
+    xdc_focus(tx, 0, [0 0 40]/1000);
+    [hp,start_t]=calc_hp(tx,points);
+    [m,n]=size(hp);
+    % With 'Norm' on each impulse response
+    for i=1:n
+        P1(i) = norm(hp(:,i));
+    end
+    P1=reshape(P1,[Im_size(1),Im_size(3)]);
+    P1=rot90(P1,1);
+    Result=flipud(P1);
+    Result_norm=Result-min(min(Result));
+    Result_norm=Result_norm/max(max(Result_norm));
+    a = (1-1e-4)/(max(Result(:))- min(Result(:)));
+    b = 1 - a*max(Result(:));
+    Result = a*Result + b;
+    Result_dB=10*log10(Result);
+    subplot(2,3,kerf_index);
+    imagesc(1000*x(:),1000*z(:),Result_norm);    
+    xlabel('X[mm]');ylabel('Z[mm]');
+    colormap(hot)
+    subtitle = strcat('kerf = ', num2str(kerf_vec(kerf_index)));
+    title(subtitle);
 end
