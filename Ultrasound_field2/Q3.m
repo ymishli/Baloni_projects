@@ -99,14 +99,35 @@ end
 [N,M] = size(rf_data);
 rf_data = rf_data/max(max(rf_data));
 figure('Name','Q3 - Section 2 - RF Data matrix result');
-for i=1:no_lines
-    timeline = (0:N-1)/fs+times(i);    
+for i=1:no_lines  
+    timeline = (0:N-1)/fs;    
     plot(timeline, rf_data(:,i)+i,'b');    
     hold on;
 end
 title('Q3 - Section 2 - RF Data matrix result');
 xlabel('time [sec]'); ylabel('RF Data per Element');
 hold off;
+
+% build matrix aligned in time
+times_shift = round((times - min(times))*fs);
+figure('Name','Q3 - Section 3 - RF Data matrix aligned in time');
+timeline = (0:N-1)/fs;    
+for i=1:no_lines    
+    rf_data(:,i) = circshift(rf_data(:,i),times_shift(i));
+    plot(timeline, rf_data(:,i)+i,'b');    
+    hold on;
+end
+title('Q3 - Section 3 - RF Data matrix aligned in time');
+xlabel('time [sec]'); ylabel('RF Data per Element');
+hold off;
+figure('Name','Q3 - Section 3 - Received image');
+min_sample=min(times)*fs;
+depth=((0:size(N,1)-1)+min_sample)/fs*c/2;
+x=((1:no_lines)-no_lines/2)*dx;
+imagesc(x*1000, depth*1000, rf_data);
+colormap(gray(256));
+title('Q3 - Section 3 - Received image');
+xlabel('Liteal axes [mm]'); ylabel('Depth [mm]');
 
 
 
