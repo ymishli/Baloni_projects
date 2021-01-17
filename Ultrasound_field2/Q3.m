@@ -14,8 +14,10 @@ height      = 5/1000;           % Height of element [m]
 kerf        = 0.050/1000;       % Kerf [m]
 focus       = [0 0 60]/1000;    % Fixed focal point [m]
 N_elements  = 128;              % Number of physical elements
+N_active    = 32;               % Active element on each
 N_sub_x     = 1;                % Number of sub-divisions in x-direction of elements
 N_sub_y     = 1;                % Number of sub-divisions in y-direction of elements
+no_lines    = 48;               % Number of A-lines in image
 
 % Set simulation parameters
 set_sampling(fs);               % Sets sampling frequency
@@ -69,3 +71,42 @@ plot((0:N-1)/fs+t, sum(v'));
 title('Q3 - Section 1 - Summed response');
 xlabel('time [sec]'); ylabel('Normalized response');
 xlim([min(timeline) max(timeline)]);
+
+% Do linear array imaging
+dx=width; % Increment for image
+z_focus=40/1000;
+% Pre-allocate some storage
+rf_data=zeros(1,no_lines);
+for i=1:no_lines
+% Find position for imaging
+x=(i-1-no_lines/2)*dx;
+% Set the focus for this direction
+xdc_center_focus (tx, [x 0 0]);
+xdc_focus (tx, 0, [x 0 z_focus]);
+xdc_center_focus (rx, [x 0 0]);
+xdc_focus (rx, 0, [x 0 z_focus]);
+% Set the active elements using the apodization
+apo=[zeros(1, 2*(i-1)) hamming(N_active)' zeros(1, N_elements-N_active-2*(i-1))];
+xdc_apodization (tx, 0, apo);
+xdc_apodization (rx, 0, apo);
+% Calculate the received response
+[v, t1]=calc_scat(tx, rx, [0 0 40]/1000, 1);
+% Store the result
+rf_data(1:max(size(v)),i)=v;
+times(i) = t1;
+end
+
+[N,M] = size(rf_data);
+rf_data = rf_data/max(max(rf_data));
+figure('Name','Q3 - Section 2 - RF Data matrix result');
+for i=1:no_lines
+    timeline = (0:N-1)/fs+times(i);    
+    plot(timeline, rf_data(:,i)+i,'b');    
+    hold on;
+end
+title('Q3 - Section 2 - RF Data matrix result');
+xlabel('time [sec]'); ylabel('RF Data per Element');
+hold off;
+
+
+
