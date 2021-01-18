@@ -1,11 +1,11 @@
 clc; close all;clear all;
 
 % Initialize Field
-%addpath('C:\Users\Rony\Desktop\Ultrasound\Field2\Field_II_ver_3_22_windows');
+%addpath('Field_II_ver_3_22_windows');
 field_init(0)
 
 % Control the plots plot_on = [sec_a sec_b sec_c sec_d sec_e]
-plot_on = [0 1 1 1 1];
+plot_on = [1 1 1 1 1];
 
 % Generate the transducer aperture for send and receive
 f0          = 2.5e6;            %  Transducer center frequency [Hz]

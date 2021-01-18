@@ -1,7 +1,7 @@
 clc; close all;clear all;
 
 % Initialize Field
-%addpath('C:\Users\Rony\Desktop\Ultrasound\Field2\Field_II_ver_3_22_windows');
+%addpath('Field_II_ver_3_22_windows');
 field_init(0)
 
 % Generate the transducer aperture for send and receive
@@ -14,10 +14,10 @@ height      = 5/1000;           % Height of element [m]
 kerf        = 0.050/1000;       % Kerf [m]
 focus       = [0 0 60]/1000;    % Fixed focal point [m]
 N_elements  = 128;              % Number of physical elements
-N_active    = 32;               % Active element on each
+N_active    = 48;               % Active element on each
 N_sub_x     = 1;                % Number of sub-divisions in x-direction of elements
 N_sub_y     = 1;                % Number of sub-divisions in y-direction of elements
-no_lines    = 48;               % Number of A-lines in image
+no_lines    = (N_elements-N_active)/2;               % Number of A-lines in image
 
 % Set simulation parameters
 set_sampling(fs);               % Sets sampling frequency
@@ -126,8 +126,34 @@ depth=((0:size(N,1)-1)+min_sample)/fs*c/2;
 x=((1:no_lines)-no_lines/2)*dx;
 imagesc(x*1000, depth*1000, rf_data);
 colormap(gray(256));
-title('Q3 - Section 3 - Received image');
+title('Q3 - Section 3 - Gray scale image');
 xlabel('Liteal axes [mm]'); ylabel('Depth [mm]');
 
+% decimate by factor of 10
+% rf_data_dec_10 = zeros(M/10,N);
+dec = 10;
+for i=1:no_lines    
+    rf_data_dec_10(:,i) = decimate(rf_data(:,i),dec);        
+end
 
+% calc enelop with Hilbert transform
+for i=1:no_lines
+rf_env=abs(hilbert(rf_data(:,i)));
+env(1:size(rf_env,1),i)=rf_env;
+end
+
+% make logarithmic compression to a 60 dB dynamic range
+% with proper units on the axis
+figure('Name','Q3 - Section 4 -Image of point (40 dB dynamic range)');
+env_dB=20*log10(env);
+env_dB=env_dB-max(max(env_dB));
+env_gray=127*(env_dB+40)/40;
+depth=((0:size(env,1)-1)+min_sample)/(fs)*c/2;
+x=((1:no_lines)-no_lines/2)*dx;
+image(x*1000, depth*1000, env_gray);
+xlabel('Lateral distance [mm]');
+ylabel('Depth [mm]');
+axis('image');
+colormap(gray(128));
+title('Q3 - Section 4 -Image of point (40 dB dynamic range)');
 
